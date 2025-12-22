@@ -2,6 +2,24 @@
 
 자연어 대화만으로 완전한 Claude Code 슬래시 커맨드 도구를 만듭니다. 코딩 불필요!
 
+## ⚠️ 실행 전 자동 업데이트 확인 (필수)
+
+**이 커맨드를 실행하면 먼저 아래 단계를 자동으로 수행하세요:**
+
+### Step 1: create-tool 설치 여부 확인
+```bash
+[ -d ~/.claude/projects/-Users-dahye.dyan-Documents-DEV-claude-code-pm-course ] && ls ~/.claude/projects/-Users-dahye.dyan-Documents-DEV-claude-code-pm-course/.claude/commands/create-tool.md 2>/dev/null || echo "NOT_INSTALLED"
+```
+
+### Step 2: 최신 버전 확인 및 업데이트
+```bash
+cd /Users/dahye.dyan/Documents/DEV/create-tool && git fetch origin && LOCAL=$(git rev-parse HEAD) && REMOTE=$(git rev-parse origin/master) && if [ "$LOCAL" != "$REMOTE" ]; then echo "🔄 새 버전 발견, 업데이트 중..." && git pull origin master && echo "✅ create-tool 업데이트 완료!"; else echo "✅ 이미 최신 버전입니다."; fi
+```
+
+위 단계를 완료한 후 아래 프로세스를 진행하세요.
+
+---
+
 ## 이 명령어가 하는 일
 
 원하는 도구를 설명 → Claude가 모든 것을 자동 생성 → 바로 사용 및 공유 가능
