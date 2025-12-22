@@ -180,6 +180,117 @@ Claude가 확인: which dahtmad-md2pdf
 실제 실행: dahtmad-md2pdf README.md
 ```
 
+### Phase 3.7: 실행 환경 감지 및 설정 파일 생성
+
+**목적**: Claude Code와 Google Antigravity 모두에서 도구가 작동하도록 적절한 설정 파일 생성
+
+**실행 환경 자동 감지**:
+```bash
+# 환경 감지 명령어
+if [ -d ".claude" ] || [ -n "$CLAUDE_CODE" ]; then
+  echo "CLAUDE_CODE"
+elif [ -d ".agent" ] || [ -n "$ANTIGRAVITY" ]; then
+  echo "ANTIGRAVITY"
+else
+  echo "UNKNOWN"
+fi
+```
+
+**환경별 설정 파일 구조**:
+
+| 환경 | 설정 디렉토리 | 커맨드 파일 위치 |
+|------|--------------|-----------------|
+| Claude Code | `.claude/` | `.claude/commands/[도구이름].md` |
+| Antigravity | `.agent/` | `.agent/rules/[도구이름].md` |
+
+**생성할 파일 결정**:
+
+1. **사용자에게 질문**:
+   ```
+   어떤 환경에서 사용할 도구인가요?
+   1. Claude Code만 (기본값)
+   2. Antigravity만
+   3. 둘 다 지원
+   ```
+
+2. **자동 감지 기반 추천**:
+   - 현재 프로젝트에 `.claude/` 디렉토리가 있으면 → Claude Code 추천
+   - 현재 프로젝트에 `.agent/` 디렉토리가 있으면 → Antigravity 추천
+   - 둘 다 있거나 없으면 → 사용자에게 질문
+
+**Claude Code 설정 파일** (`.claude/commands/[도구이름].md`):
+```markdown
+# /[도구이름] - [간단한 설명]
+
+[기존 커맨드 파일 형식 유지]
+```
+
+**Antigravity 설정 파일** (`.agent/rules/[도구이름].md`):
+```markdown
+---
+trigger: glob
+glob: "**/*"
+---
+
+# [도구이름] - [간단한 설명]
+
+## 개요
+
+이 도구는 [기능 설명]을 수행합니다.
+
+## 실행 전 확인 단계
+
+### Step 1: 설치 여부 확인
+```bash
+which [스코프토큰]-[도구이름]
+```
+
+### Step 2-A: 이미 설치된 경우 → 업데이트 확인
+```bash
+TOOL_PATH=$(dirname $(dirname $(which [스코프토큰]-[도구이름]))) && cd $TOOL_PATH && git fetch origin && LOCAL=$(git rev-parse HEAD) && REMOTE=$(git rev-parse origin/master) && if [ "$LOCAL" != "$REMOTE" ]; then echo "🔄 새 버전 발견, 업데이트 중..." && git pull origin master && npm install && npm run build && echo "✅ 업데이트 완료!"; else echo "✅ 이미 최신 버전입니다."; fi
+```
+
+### Step 2-B: 설치되지 않은 경우 → 자동 설치
+```bash
+git clone https://github.com/[사용자명]/[도구이름].git /tmp/[도구이름] && cd /tmp/[도구이름] && npm install && npm run build && npm link
+```
+
+### Step 3: 도구 실행
+```bash
+[스코프토큰]-[도구이름] [인자들]
+```
+
+## 사용 예시
+
+[인자들] 부분에 적절한 값을 넣어 실행합니다.
+
+## 에러 처리
+
+- **"command not found"**: Step 2-B 실행
+- **"Permission denied"**: `sudo npm link` 실행
+- **"Module not found"**: 도구 디렉토리에서 `npm install` 실행
+```
+
+**둘 다 지원 선택 시**:
+- `.claude/commands/[도구이름].md` 생성
+- `.agent/rules/[도구이름].md` 생성
+- README.md에 두 환경 모두 설치 방법 기재
+
+**README.md 설치 섹션 (둘 다 지원 시)**:
+```markdown
+## 설치
+
+### Claude Code용
+```bash
+mkdir -p .claude/commands && curl -o .claude/commands/[도구이름].md https://raw.githubusercontent.com/[사용자명]/[도구이름]/master/.claude/commands/[도구이름].md
+```
+
+### Antigravity용
+```bash
+mkdir -p .agent/rules && curl -o .agent/rules/[도구이름].md https://raw.githubusercontent.com/[사용자명]/[도구이름]/master/.agent/rules/[도구이름].md
+```
+```
+
 ### Phase 4: 코드 생성
 
 사용자 요구사항에 맞춰 생성:
