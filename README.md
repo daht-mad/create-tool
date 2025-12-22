@@ -11,6 +11,14 @@
 
 ## 빠른 시작
 
+### 설치 (한 줄 명령어)
+
+```bash
+mkdir -p .claude/commands && curl -o .claude/commands/create-tool.md https://raw.githubusercontent.com/daht-mad/create-tool/master/.claude/commands/create-tool.md
+```
+
+설치 후 Claude Code에서 `/create-tool`로 바로 사용 가능합니다.
+
 ### 비개발자라면
 
 👉 [비개발자 가이드](./NON-DEVELOPER-GUIDE.md)를 읽어보세요!
@@ -18,7 +26,7 @@
 간단히 말하면:
 
 ```
-1. VSCode에서 Claude Code 실행
+1. 위 설치 명령어 실행
 2. /create-tool 입력
 3. Claude와 대화하며 원하는 기능 설명
 4. 완성된 도구를 팀과 공유!
