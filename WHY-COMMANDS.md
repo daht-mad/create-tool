@@ -1,10 +1,223 @@
-# 왜 Commands 방식이 최고인가?
+# 왜 Commands 방식인가?
 
 ## 핵심 철학
 
 > **"비개발자가 터미널에서 이것저것 하지 않아도 된다"**
 >
 > **한 줄 입력 → Claude Code 재시작 → 슬래시 커맨드로 바로 사용**
+
+---
+
+## TL;DR: Skills로는 불가능한 이유
+
+### Anthropic 공식 문서의 Skills 제한사항
+
+> **런타임 환경 제약**
+>
+> Skills는 다음 제한 사항이 있는 코드 실행 컨테이너에서 실행됩니다:
+>
+> - **네트워크 액세스 없음**: Skills는 외부 API 호출을 하거나 인터넷에 액세스할 수 없습니다
+> - **런타임 패키지 설치 없음**: 미리 설치된 패키지만 사용 가능합니다. 실행 중에 새 패키지를 설치할 수 없습니다.
+> - **사전 구성된 종속성만**: 사용 가능한 패키지 목록은 코드 실행 도구 문서를 확인하세요
+>
+> — 출처: https://platform.claude.com/docs/ko/agents-and-tools/agent-skills/overview
+
+---
+
+## create-tool의 핵심 기능과 Skills 지원 여부
+
+create-tool이 제공하는 기능들을 하나씩 살펴보고, Skills로 구현 가능한지 검토합니다.
+
+### 1. 자동 설치 (Auto Installation)
+
+**Commands 방식:**
+```bash
+# 커맨드 파일에 정의된 자동 설치 로직
+git clone https://github.com/daht-mad/md2pdf.git /tmp/md2pdf
+cd /tmp/md2pdf && npm install && npm run build && npm link
+```
+
+사용자는 `/md2pdf README.md`만 입력하면, Claude가 설치 여부를 확인하고 없으면 자동 설치합니다.
+
+**Skills 방식:** ❌ **불가능**
+- `git clone` → 네트워크 액세스 없음
+- `npm install` → 런타임 패키지 설치 없음
+- `npm link` → 시스템 PATH 수정 불가
+
+---
+
+### 2. 자동 업데이트 (Auto Update)
+
+**Commands 방식:**
+```bash
+# 커맨드 파일의 업데이트 로직
+TOOL_PATH=$(dirname $(dirname $(which dahtmad-md2pdf)))
+cd $TOOL_PATH && git fetch origin
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse origin/master)
+if [ "$LOCAL" != "$REMOTE" ]; then
+  git pull origin master && npm install && npm run build
+fi
+```
+
+실행할 때마다 자동으로 최신 버전 확인 → 업데이트 적용
+
+**Skills 방식:** ❌ **불가능**
+- `git fetch` → 네트워크 액세스 없음
+- `git pull` → 네트워크 액세스 없음
+- 버전 비교 후 업데이트 → 불가능
+
+---
+
+### 3. 외부 프로그램 실행 (External Program Execution)
+
+**Commands 방식:**
+```bash
+# md2pdf가 내부적으로 사용하는 것들
+puppeteer  # 브라우저 기반 PDF 렌더링
+mermaid-cli  # 다이어그램 생성
+```
+
+**Skills 방식:** ❌ **불가능**
+- puppeteer → 사전 설치된 패키지 목록에 없음
+- mermaid-cli → 사전 설치된 패키지 목록에 없음
+- 컨테이너 환경에서 headless Chrome 실행 불가
+
+---
+
+### 4. 한 줄 배포 (One-Line Distribution)
+
+**Commands 방식:**
+```bash
+mkdir -p .claude/commands && curl -o .claude/commands/md2pdf.md \
+  https://raw.githubusercontent.com/daht-mad/md2pdf/master/.claude/commands/md2pdf.md
+```
+
+- 사용자: 복붙 한 번 → 재시작 → 바로 사용
+- 배포: GitHub에 푸시만 하면 끝
+
+**Skills 방식:** ⚠️ **부분적 가능**
+- 파일 다운로드는 가능
+- 하지만 다운로드한 skill이 실제로 도구를 실행할 수 없음 (위 제한사항들 때문)
+
+---
+
+### 5. 시스템 명령어 실행 (System Command Execution)
+
+**Commands 방식:**
+```bash
+which dahtmad-md2pdf  # 설치 확인
+npm link              # 전역 명령어 등록
+chmod +x ./bin/*.js   # 실행 권한 부여
+```
+
+**Skills 방식:** ❌ **불가능**
+- 시스템 PATH 조회/수정 불가
+- 파일 권한 변경 불가
+- 전역 패키지 등록 불가
+
+---
+
+### 6. 파일 시스템 자유로운 접근 (File System Access)
+
+**Commands 방식:**
+```typescript
+// 어디서든 파일 검색 및 처리
+const files = glob.sync('**/*.md');
+fs.writeFileSync(outputPath, pdfBuffer);
+```
+
+**Skills 방식:** ⚠️ **제한적**
+- 컨테이너 내부 파일만 접근 가능
+- 사용자의 실제 프로젝트 파일에 직접 접근 제한
+
+---
+
+### 7. 네트워크 요청 (Network Requests)
+
+**Commands 방식:**
+```typescript
+// 필요시 외부 API 호출 가능
+await fetch('https://api.example.com/data');
+```
+
+**Skills 방식:** ❌ **불가능**
+- 공식 문서: "Skills는 외부 API 호출을 하거나 인터넷에 액세스할 수 없습니다"
+
+---
+
+## 기능별 비교 요약
+
+| create-tool 핵심 기능 | Commands | Skills | Skills 불가 이유 |
+|----------------------|----------|--------|-----------------|
+| **자동 설치** | ✅ | ❌ | 네트워크 + 패키지 설치 필요 |
+| **자동 업데이트** | ✅ | ❌ | git fetch/pull 네트워크 필요 |
+| **외부 프로그램 실행** | ✅ | ❌ | puppeteer 등 미설치 |
+| **한 줄 배포** | ✅ | ⚠️ | 파일만 가능, 실행은 불가 |
+| **시스템 명령어** | ✅ | ❌ | PATH, 권한 수정 불가 |
+| **자유로운 파일 접근** | ✅ | ⚠️ | 컨테이너 내부만 |
+| **네트워크 요청** | ✅ | ❌ | 명시적 제한 |
+| **npm link (전역 등록)** | ✅ | ❌ | 시스템 수정 불가 |
+
+**7개 핵심 기능 중 Skills로 완전히 구현 가능한 것: 0개**
+
+---
+
+## 근본적 차이: 실행 환경
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Commands                                                    │
+│  ─────────                                                   │
+│  실행 환경: 사용자의 실제 컴퓨터                              │
+│  권한: 사용자와 동일한 권한                                   │
+│  접근: 파일 시스템, 네트워크, 시스템 명령어 모두 가능          │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  Skills                                                      │
+│  ────────                                                    │
+│  실행 환경: 격리된 컨테이너 (샌드박스)                        │
+│  권한: 제한된 권한                                            │
+│  접근: 컨테이너 내부만, 네트워크 차단, 패키지 설치 불가        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Commands는 "Claude가 사용자 컴퓨터에서 직접 실행"**
+**Skills는 "Claude가 격리된 가상환경에서 실행"**
+
+---
+
+## Skills가 적합한 경우
+
+Skills는 다음과 같은 작업에 적합합니다:
+
+- Claude의 **도메인 지식 확장** (코딩 컨벤션, 스타일 가이드)
+- **텍스트 분석/처리** 가이드라인
+- **워크플로우 문서** (코드 리뷰 체크리스트)
+- 외부 도구 **없이** Claude만으로 처리 가능한 작업
+
+**create-tool의 목적 ≠ Skills의 목적**
+
+```
+create-tool: "비개발자가 외부 프로그램을 쉽게 사용"
+Skills: "Claude의 도메인 전문성 확장"
+```
+
+---
+
+## 결론
+
+| 질문 | 답변 |
+|------|------|
+| Skills로 md2pdf 만들 수 있나? | ❌ puppeteer 설치 불가 |
+| Skills로 자동 설치 구현 가능? | ❌ 네트워크 + npm 불가 |
+| Skills로 자동 업데이트 가능? | ❌ git fetch 불가 |
+| Skills로 외부 CLI 실행 가능? | ❌ 시스템 접근 불가 |
+
+**create-tool의 모든 핵심 기능은 Skills의 제한사항에 의해 원천 차단됩니다.**
+
+**따라서 Commands가 유일한 선택입니다.**
 
 ---
 
@@ -57,11 +270,12 @@ mkdir -p .claude/skills && curl -o .claude/skills/md2pdf.md https://...
 ```
 
 **문제점:**
-- ❌ **외부 프로그램 실행이 어려움**
-- ❌ Claude 능력만으로 PDF 생성 불가능
-- ❌ 복잡한 설치 과정을 자동화할 수 없음
+- ❌ **puppeteer 설치 불가** (런타임 패키지 설치 없음)
+- ❌ **git clone 불가** (네트워크 액세스 없음)
+- ❌ **npm install 불가** (런타임 패키지 설치 없음)
+- ❌ **npm link 불가** (시스템 수정 불가)
 
-**결론:** PDF 변환처럼 **실제 프로그램이 필요한 작업에는 부적합**
+**결론:** PDF 변환처럼 **실제 프로그램이 필요한 작업은 원천적으로 불가능**
 
 **난이도:** ⭐⭐ (쉬우나 기능 제한적)
 
