@@ -450,31 +450,228 @@ img-compress → github.com/user/img-compress → @user/img-compress
 
 ### 26. 여러 도구를 **하나의 저장소(monorepo)**로 묶어도 되나요?
 
-**네, 가능합니다.**
+**네, 가능합니다. 하지만 두 가지 접근 방식의 장단점을 이해해야 합니다.**
 
-모노레포 구조:
+---
+
+#### 접근 방식 1: 개별 저장소 (권장 - 기본값)
+
+**구조:**
 ```
-my-tools/
+github.com/user/
+├── md2pdf/           ← 독립 저장소
+├── img-compress/     ← 독립 저장소
+└── csv-to-json/      ← 독립 저장소
+```
+
+**각 저장소 내부:**
+```
+md2pdf/
+├── .claude/commands/md2pdf.md
+├── src/md2pdf.ts
+├── bin/md2pdf.js
+├── package.json      ← name: "@user/md2pdf"
+├── README.md
+└── ...
+```
+
+**장점:**
+- ✅ 설치 명령어가 단순: `curl -o ... /md2pdf/master/.claude/commands/md2pdf.md`
+- ✅ 독립적인 버전 관리 (md2pdf v2.0, img-compress v1.3 등)
+- ✅ 개별 이슈 트래킹
+- ✅ 필요한 도구만 설치
+- ✅ Claude가 도구를 찾고 업데이트하기 쉬움
+
+**단점:**
+- ❌ 저장소가 많아지면 관리 포인트 증가
+- ❌ 공통 코드 공유 어려움
+
+**설치 흐름:**
+```
+사용자: curl로 md2pdf.md 다운로드
+   ↓
+사용자: /md2pdf 실행
+   ↓
+Claude: git clone github.com/user/md2pdf
+   ↓
+완료! (단순하고 명확)
+```
+
+---
+
+#### 접근 방식 2: 모노레포 (고급)
+
+**구조:**
+```
+my-tools/                          ← 단일 저장소
 ├── packages/
 │   ├── md2pdf/
-│   │   ├── package.json
-│   │   └── src/
+│   │   ├── package.json          ← name: "@user/md2pdf"
+│   │   ├── src/md2pdf.ts
+│   │   └── bin/md2pdf.js
 │   ├── img-compress/
-│   │   ├── package.json
-│   │   └── src/
+│   │   ├── package.json          ← name: "@user/img-compress"
+│   │   ├── src/img-compress.ts
+│   │   └── bin/img-compress.js
 │   └── csv-to-json/
+│       └── ...
 ├── .claude/
 │   └── commands/
 │       ├── md2pdf.md
 │       ├── img-compress.md
 │       └── csv-to-json.md
-└── package.json (workspaces 설정)
+├── package.json                   ← workspaces 설정
+└── README.md
 ```
 
-**고려사항:**
-- npm workspaces 또는 lerna 사용
-- 개별 도구의 독립 배포가 복잡해짐
-- curl 설치 명령어가 조금 더 복잡해짐
+**루트 package.json:**
+```json
+{
+  "name": "my-tools",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:md2pdf": "npm run build -w @user/md2pdf"
+  }
+}
+```
+
+**장점:**
+- ✅ 한 곳에서 모든 도구 관리
+- ✅ 공통 코드/유틸리티 공유 가능
+- ✅ 일괄 빌드, 테스트, 배포
+- ✅ 의존성 중복 제거 (node_modules 공유)
+
+**단점:**
+- ❌ 설치 명령어가 복잡해짐
+- ❌ 개별 도구만 업데이트하기 어려움
+- ❌ 저장소 전체를 clone해야 함
+- ❌ Claude가 특정 도구를 찾기 더 어려움
+
+---
+
+#### 모노레포에서의 개별 도구 독립 배포
+
+**문제:** 모노레포에서 `npm link`는 어떻게?
+
+**해결책 1: 개별 패키지에서 link**
+```bash
+# 특정 도구만 전역 설치
+cd my-tools/packages/md2pdf
+npm link
+
+# 결과: md2pdf 명령어만 전역 등록
+```
+
+**해결책 2: 워크스페이스 활용**
+```bash
+# 루트에서 특정 패키지만 link
+npm link -w @user/md2pdf
+```
+
+**해결책 3: npm 퍼블리싱 (가장 깔끔)**
+```bash
+# 각 패키지를 npm에 개별 배포
+cd packages/md2pdf
+npm publish --access public
+
+# 사용자는 npm으로 설치
+npm install -g @user/md2pdf
+```
+
+---
+
+#### 모노레포에서의 커맨드 파일 설치
+
+**복잡해지는 부분:**
+
+개별 저장소일 때:
+```bash
+# 단순함
+curl -o .claude/commands/md2pdf.md \
+  https://raw.githubusercontent.com/user/md2pdf/master/.claude/commands/md2pdf.md
+```
+
+모노레포일 때:
+```bash
+# 경로가 길어짐
+curl -o .claude/commands/md2pdf.md \
+  https://raw.githubusercontent.com/user/my-tools/master/.claude/commands/md2pdf.md
+```
+
+**모노레포 커맨드 파일 내용도 달라져야 함:**
+
+```markdown
+# /md2pdf - 마크다운을 PDF로 변환
+
+## 설치 (모노레포 버전)
+```bash
+# 저장소 전체 clone
+git clone https://github.com/user/my-tools.git /tmp/my-tools
+
+# 특정 패키지만 빌드 & 링크
+cd /tmp/my-tools
+npm install
+npm run build -w @user/md2pdf
+npm link -w @user/md2pdf
+```
+```
+
+---
+
+#### 어떤 것을 선택해야 할까?
+
+**개별 저장소를 선택하는 경우:**
+- 도구 개수가 10개 미만
+- 각 도구가 독립적인 기능
+- 비개발자가 주로 사용
+- 단순한 설치 경험이 중요
+
+**모노레포를 선택하는 경우:**
+- 도구 개수가 많고 계속 증가
+- 도구 간 공통 코드가 많음
+- 개발팀이 함께 관리
+- npm 퍼블리싱으로 배포 예정
+
+---
+
+#### 하이브리드 접근법 (실용적 대안)
+
+**개념:** 개별 저장소로 개발하되, 설치 안내를 모아두는 "카탈로그" 저장소 운영
+
+```
+github.com/user/
+├── md2pdf/              ← 개별 저장소 (실제 코드)
+├── img-compress/        ← 개별 저장소 (실제 코드)
+├── csv-to-json/         ← 개별 저장소 (실제 코드)
+└── my-tools-catalog/    ← 카탈로그 저장소 (목록만)
+    ├── README.md        ← 모든 도구 목록 & 설치 방법
+    └── install-all.sh   ← 전체 설치 스크립트 (선택)
+```
+
+**장점:**
+- 각 도구는 독립적으로 개발/배포
+- 사용자는 카탈로그에서 필요한 도구 선택
+- 두 방식의 장점만 취함
+
+---
+
+#### 실제 예시: 이 시스템(create-tool)의 구조
+
+현재 `create-tool` 저장소는 **하이브리드 형태**입니다:
+
+```
+create-tool/
+├── .claude/commands/create-tool.md  ← 메인 도구
+├── md2pdf/                          ← 예시 도구 (서브폴더)
+├── pdf2excel/                       ← 예시 도구 (서브폴더)
+└── README.md
+```
+
+하지만 실제 배포 시에는 각 도구를 **개별 저장소로 분리**하는 것을 권장합니다.
 
 ---
 
@@ -491,7 +688,432 @@ my-tools/
 **결론:**
 - 만들어진 도구는 어디서든 사용 가능 (`md2pdf README.md`)
 - 슬래시 커맨드 자동화는 Claude Code 전용
-- 다른 AI용으로 `.cursor/` 같은 별도 설정 파일 작성 가능
+- 다른 AI용으로 별도 설정 파일 작성 가능
+
+---
+
+#### 각 AI IDE별 설정 파일 구조
+
+**프로젝트에 여러 AI IDE 지원을 추가하려면:**
+
+```
+my-tool/
+├── .claude/
+│   └── commands/
+│       └── my-tool.md          ← Claude Code용
+├── .cursor/
+│   └── rules/
+│       └── my-tool.mdc         ← Cursor용
+├── .windsurf/
+│   └── rules/
+│       └── my-tool.md          ← Windsurf(Codeium)용
+├── .github/
+│   └── copilot-instructions.md ← GitHub Copilot용
+├── src/
+├── package.json
+└── README.md
+```
+
+---
+
+#### Cursor용 설정 파일 (.cursor/rules/*.mdc)
+
+**파일 위치:** `.cursor/rules/my-tool.mdc`
+
+**Cursor Rules 형식:**
+```markdown
+---
+description: my-tool - 마크다운을 PDF로 변환하는 도구
+globs:
+  - "**/*.md"
+alwaysApply: false
+---
+
+# my-tool 사용 가이드
+
+## 도구 설명
+마크다운 파일을 PDF로 변환하는 CLI 도구입니다.
+
+## 설치 확인
+터미널에서 다음 명령어로 설치 여부를 확인하세요:
+```bash
+which dahtmad-my-tool
+```
+
+## 설치되지 않은 경우
+```bash
+git clone https://github.com/daht-mad/my-tool.git /tmp/my-tool
+cd /tmp/my-tool && npm install && npm run build && npm link
+```
+
+## 사용법
+```bash
+dahtmad-my-tool [파일경로]
+```
+
+## 예시
+```bash
+dahtmad-my-tool README.md
+dahtmad-my-tool ./docs/
+```
+
+## 주의사항
+- Node.js 18 이상 필요
+- 한글 폰트 자동 지원
+```
+
+**Cursor Rules 특징:**
+- `globs`: 이 규칙이 적용될 파일 패턴
+- `alwaysApply`: 항상 컨텍스트에 포함할지 여부
+- `description`: 규칙 설명 (Cursor가 자동 선택에 사용)
+
+---
+
+#### Windsurf(Codeium)용 설정 파일 (.windsurf/rules/*.md)
+
+**파일 위치:** `.windsurf/rules/my-tool.md`
+
+**Windsurf Rules 형식:**
+```markdown
+---
+trigger: glob
+glob: "**/*.md"
+---
+
+# my-tool 사용 규칙
+
+## 개요
+이 프로젝트에서 마크다운을 PDF로 변환할 때 `dahtmad-my-tool`을 사용합니다.
+
+## 설치 확인
+```bash
+which dahtmad-my-tool || echo "설치 필요"
+```
+
+## 자동 설치
+설치되지 않은 경우:
+```bash
+git clone https://github.com/daht-mad/my-tool.git /tmp/my-tool
+cd /tmp/my-tool && npm install && npm run build && npm link
+```
+
+## 실행 명령어
+```bash
+dahtmad-my-tool [입력파일]
+```
+
+## 변환 워크플로우
+1. 마크다운 파일 경로 확인
+2. `dahtmad-my-tool` 실행
+3. 같은 위치에 PDF 생성됨
+```
+
+**Windsurf Rules 특징:**
+- `trigger`: 규칙 트리거 방식 (glob, always, manual)
+- `glob`: 트리거될 파일 패턴
+- Claude Code보다 간단한 형식
+
+---
+
+#### Google Antigravity용 설정 파일 (.agent/rules/*.md)
+
+**배경:** Antigravity는 Google이 2025년 11월에 출시한 AI IDE로, Windsurf 팀이 합류하여 개발했습니다. Windsurf와 유사하지만 `.agent/` 디렉토리를 사용합니다.
+
+**파일 위치:** `.agent/rules/my-tool.md`
+
+**Antigravity Rules 형식:**
+```markdown
+---
+trigger: glob
+glob: "**/*.md"
+---
+
+# my-tool 사용 규칙
+
+## 개요
+이 프로젝트에서 마크다운을 PDF로 변환할 때 `dahtmad-my-tool`을 사용합니다.
+
+## 설치 확인
+```bash
+which dahtmad-my-tool || echo "설치 필요"
+```
+
+## 자동 설치
+설치되지 않은 경우:
+```bash
+git clone https://github.com/daht-mad/my-tool.git /tmp/my-tool
+cd /tmp/my-tool && npm install && npm run build && npm link
+```
+
+## 실행 명령어
+```bash
+dahtmad-my-tool [입력파일]
+```
+```
+
+**Antigravity 전체 프로젝트 구조:**
+```
+my-tool/
+├── .agent/
+│   ├── rules/
+│   │   └── my-tool.md              ← 도구 사용 규칙
+│   └── workflows/
+│       └── convert-to-pdf.md       ← 워크플로우 (선택)
+├── .windsurf/
+│   └── rules/
+│       └── my-tool.md              ← Windsurf 호환용
+├── .claude/
+│   └── commands/
+│       └── my-tool.md              ← Claude Code용
+├── src/
+├── package.json
+└── README.md
+```
+
+**Antigravity Rules 특징:**
+- **Planning Mode Guard**: 계획 모드에서 실수로 실행되는 것 방지
+- **Agent Mode**: 자율적으로 터미널 명령 실행 가능
+- **터미널 정책 설정**: Turbo(자동 실행), Auto(선택적), Off(수동)
+- Windsurf와 동일한 문법 사용 (호환성 높음)
+
+---
+
+#### Windsurf/Antigravity 워크플로우 파일 (선택)
+
+**워크플로우란?** 여러 단계를 순서대로 실행하는 자동화 스크립트
+
+**파일 위치:**
+- Windsurf: `.windsurf/workflows/convert-to-pdf.md`
+- Antigravity: `.agent/workflows/convert-to-pdf.md`
+
+**워크플로우 예시:**
+```markdown
+---
+name: convert-to-pdf
+description: 마크다운 파일을 PDF로 변환
+---
+
+# PDF 변환 워크플로우
+
+## 단계 1: 도구 설치 확인
+```bash
+which dahtmad-my-tool || (git clone https://github.com/daht-mad/my-tool.git /tmp/my-tool && cd /tmp/my-tool && npm install && npm run build && npm link)
+```
+
+## 단계 2: 파일 변환
+```bash
+dahtmad-my-tool $FILE
+```
+
+## 단계 3: 결과 확인
+변환된 PDF 파일이 같은 위치에 생성됩니다.
+```
+
+**워크플로우 실행:**
+- Windsurf: Cascade에서 `@convert-to-pdf` 또는 워크플로우 패널에서 선택
+- Antigravity: 워크플로우 패널에서 선택 또는 채팅에서 호출
+
+---
+
+#### Windsurf vs Antigravity 비교
+
+| 항목 | Windsurf | Antigravity |
+|------|----------|-------------|
+| 개발사 | Codeium | Google (Windsurf 팀 합류) |
+| 규칙 위치 | `.windsurf/rules/` | `.agent/rules/` |
+| 워크플로우 | `.windsurf/workflows/` | `.agent/workflows/` |
+| 문법 | frontmatter + markdown | 동일 (호환) |
+| Agent Mode | ✅ | ✅ (더 강화됨) |
+| Planning Mode Guard | ❌ | ✅ |
+| 터미널 정책 | 기본 | Turbo/Auto/Off + Allow/Deny List |
+
+**호환성 팁:** 두 IDE 모두 지원하려면 `.windsurf/`와 `.agent/` 폴더에 동일한 내용을 복사하면 됩니다.
+
+---
+
+#### GitHub Copilot용 설정 파일
+
+**파일 위치:** `.github/copilot-instructions.md`
+
+**Copilot Instructions 형식:**
+```markdown
+# 프로젝트 코딩 지침
+
+## 사용 가능한 CLI 도구
+
+### my-tool (마크다운 → PDF 변환)
+
+이 프로젝트에서 마크다운을 PDF로 변환할 때는 `dahtmad-my-tool`을 사용하세요.
+
+**설치:**
+```bash
+npm install -g @daht-mad/my-tool
+# 또는
+git clone https://github.com/daht-mad/my-tool.git /tmp/my-tool
+cd /tmp/my-tool && npm install && npm run build && npm link
+```
+
+**사용법:**
+```bash
+dahtmad-my-tool README.md      # 단일 파일
+dahtmad-my-tool ./docs/        # 디렉토리 전체
+```
+
+**주의:**
+- Node.js 18 이상 필요
+- 출력 파일은 입력 파일과 같은 위치에 생성됨
+```
+
+**Copilot Instructions 특징:**
+- 단일 파일로 프로젝트 전체 지침 제공
+- 자연어로 작성 (특별한 문법 없음)
+- 코드 제안 시 참고용으로 사용됨
+
+---
+
+#### 각 AI IDE 비교
+
+| 항목 | Claude Code | Cursor | Windsurf | Antigravity | Copilot |
+|------|-------------|--------|----------|-------------|---------|
+| 설정 위치 | `.claude/commands/` | `.cursor/rules/` | `.windsurf/rules/` | `.agent/rules/` | `.github/` |
+| 파일 형식 | `.md` | `.mdc` | `.md` | `.md` | `.md` |
+| 슬래시 커맨드 | ✅ `/tool` | ❌ | ❌ | ❌ | ❌ |
+| 워크플로우 | ❌ | ❌ | ✅ | ✅ | ❌ |
+| 자동 실행 | ✅ 완전 자동화 | ⚠️ 컨텍스트 주입 | ⚠️ 컨텍스트 주입 | ✅ Agent Mode | ❌ 참고만 |
+| 파일 패턴 트리거 | ❌ | ✅ globs | ✅ glob | ✅ glob | ❌ |
+| 터미널 실행 | ✅ 자동 | ✅ 자동 | ✅ 자동 | ✅ 자동 (정책 설정) | ⚠️ 제안만 |
+| Planning Mode | ✅ | ❌ | ❌ | ✅ (Guard 지원) | ❌ |
+
+---
+
+#### 멀티 AI IDE 지원 도구 만들기
+
+**create-tool로 생성된 도구에 다른 AI IDE 지원 추가하기:**
+
+```bash
+# 1. Claude Code로 도구 생성
+/create-tool
+
+# 2. 생성된 도구 디렉토리로 이동
+cd my-tool
+
+# 3. Cursor용 설정 추가
+mkdir -p .cursor/rules
+# .cursor/rules/my-tool.mdc 파일 생성
+
+# 4. Windsurf용 설정 추가
+mkdir -p .windsurf/rules
+# .windsurf/rules/my-tool.md 파일 생성
+
+# 5. Antigravity용 설정 추가
+mkdir -p .agent/rules
+# .agent/rules/my-tool.md 파일 생성 (Windsurf와 동일 내용)
+
+# 6. Copilot용 설정 추가
+mkdir -p .github
+# .github/copilot-instructions.md 파일 생성
+
+# 6. 커밋 & 푸시
+git add .
+git commit -m "feat: 멀티 AI IDE 지원 추가"
+git push
+```
+
+---
+
+#### 설정 파일 자동 생성 스크립트
+
+**모든 AI IDE용 설정을 한 번에 생성하는 스크립트:**
+
+```bash
+#!/bin/bash
+# generate-ai-configs.sh
+
+TOOL_NAME="my-tool"
+SCOPE_TOKEN="dahtmad"
+GITHUB_USER="daht-mad"
+DESCRIPTION="마크다운을 PDF로 변환"
+
+# Claude Code (이미 있음)
+# .claude/commands/${TOOL_NAME}.md
+
+# Cursor
+mkdir -p .cursor/rules
+cat > .cursor/rules/${TOOL_NAME}.mdc << EOF
+---
+description: ${TOOL_NAME} - ${DESCRIPTION}
+globs:
+  - "**/*.md"
+alwaysApply: false
+---
+
+# ${TOOL_NAME} 사용 가이드
+
+## 설치 확인
+\`\`\`bash
+which ${SCOPE_TOKEN}-${TOOL_NAME}
+\`\`\`
+
+## 설치
+\`\`\`bash
+git clone https://github.com/${GITHUB_USER}/${TOOL_NAME}.git /tmp/${TOOL_NAME}
+cd /tmp/${TOOL_NAME} && npm install && npm run build && npm link
+\`\`\`
+
+## 사용법
+\`\`\`bash
+${SCOPE_TOKEN}-${TOOL_NAME} [파일]
+\`\`\`
+EOF
+
+# Windsurf
+mkdir -p .windsurf/rules
+cat > .windsurf/rules/${TOOL_NAME}.md << EOF
+---
+trigger: glob
+glob: "**/*.md"
+---
+
+# ${TOOL_NAME} - ${DESCRIPTION}
+
+## 실행
+\`\`\`bash
+${SCOPE_TOKEN}-${TOOL_NAME} [파일]
+\`\`\`
+EOF
+
+# GitHub Copilot
+mkdir -p .github
+cat >> .github/copilot-instructions.md << EOF
+
+## ${TOOL_NAME}
+${DESCRIPTION}하는 도구입니다.
+\`\`\`bash
+${SCOPE_TOKEN}-${TOOL_NAME} [파일]
+\`\`\`
+EOF
+
+echo "✅ 모든 AI IDE 설정 파일 생성 완료!"
+```
+
+---
+
+#### 핵심 차이점 요약
+
+**Claude Code의 강점:**
+- `/tool` 형식의 슬래시 커맨드 → 가장 직관적
+- 자동 설치/업데이트 → 사용자 개입 최소화
+- 복잡한 워크플로우 자동화 → 여러 단계를 한 번에
+
+**Cursor/Windsurf의 강점:**
+- 파일 패턴 기반 자동 트리거
+- 코드 편집 중 컨텍스트 자동 주입
+- 더 넓은 사용자 베이스
+
+**실용적 조언:**
+- **주력 도구**: Claude Code용 `.claude/commands/` (가장 강력)
+- **호환성**: Cursor/Windsurf용 추가 (사용자층 확대)
+- **문서화**: README에 모든 AI IDE 지원 명시
 
 ---
 
