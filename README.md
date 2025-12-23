@@ -13,11 +13,19 @@
 
 ### 설치 (한 줄 명령어)
 
+**Claude Code용:**
+
 ```bash
 mkdir -p .claude/commands && curl -o .claude/commands/create-tool.md https://raw.githubusercontent.com/daht-mad/create-tool/master/.claude/commands/create-tool.md
 ```
 
-설치 후 Claude Code에서 `/create-tool`로 바로 사용 가능합니다.
+**Antigravity (Google AI IDE)용:**
+
+```bash
+mkdir -p .agent/rules && curl -o .agent/rules/create-tool.md https://raw.githubusercontent.com/daht-mad/create-tool/master/.agent/rules/create-tool.md
+```
+
+설치 후 `/create-tool`로 바로 사용 가능합니다.
 
 ### 비개발자라면
 
@@ -44,8 +52,15 @@ mkdir -p .claude/commands && curl -o .claude/commands/create-tool.md https://raw
 이 저장소
 ├── .claude/
 │   └── commands/
-│       └── create-tool.md        ⭐ 핵심! 도구 생성 자동화 스크립트
-├── md2pdf/                       📁 예시 도구 1 (마크다운 → PDF)
+│       └── create-tool.md        ⭐ Claude Code용 커맨드
+├── .agent/
+│   └── rules/
+│       └── create-tool.md        ⭐ Antigravity용 규칙
+├── md2pdf/                       📁 예시 도구 (마크다운 → PDF)
+├── pdf2excel/                    📁 예시 도구 (PDF 표 → Excel)
+├── org-matcher/                  📁 예시 도구 (조직명 유사도 매칭)
+├── sheets-wrapper/               📁 예시 도구 (Google Sheets API 래퍼)
+├── log-update/                   📁 예시 도구 (대화 내역 문서화)
 ├── HOW-IT-WORKS.md              📖 기술 문서 (개발자용)
 ├── NON-DEVELOPER-GUIDE.md       📖 사용 가이드 (비개발자용)
 └── README.md                    📖 이 파일
@@ -57,6 +72,16 @@ mkdir -p .claude/commands && curl -o .claude/commands/create-tool.md https://raw
 - 자연어 대화만으로 도구 생성
 - TypeScript, npm, Git 등 몰라도 됨
 - Claude가 모든 기술적 작업 자동 처리
+
+### 🔀 멀티 IDE 지원
+- **Claude Code**: `.claude/commands/` 디렉토리 사용
+- **Antigravity (Google AI IDE)**: `.agent/rules/` 디렉토리 사용
+- 두 환경 모두 자동 설정 파일 생성
+
+### 💬 맥락 확인 (Step 0)
+- 사용자가 인자 없이 커맨드 실행 시 필요한 정보 질문
+- 모호한 요청에 대해 명확화 후 실행
+- 에이전트가 먼저 맥락을 파악하여 정확한 작업 수행
 
 ### 🚀 원클릭 배포
 - GitHub 저장소 자동 생성
