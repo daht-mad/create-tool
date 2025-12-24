@@ -12,12 +12,12 @@ import os
 import sys
 
 
-def create_skill_md(skill_name: str) -> str:
+def create_skill_md(skill_name: str, github_username: str) -> str:
     """SKILL.md 템플릿 생성"""
     return f'''---
 name: {skill_name}
 version: 1.0.0
-repo: TODO/username/{skill_name}
+repo: {github_username}/{skill_name}
 description: |
   TODO: 이 스킬이 무엇을 하는지 설명하세요.
   다음과 같은 요청에 이 스킬을 사용하세요:
@@ -334,8 +334,11 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 '''
 
 
-def create_readme(skill_name: str) -> str:
+def create_readme(skill_name: str, github_username: str) -> str:
     """README.md 템플릿 생성 (GitHub 배포용)"""
+    from datetime import datetime
+    today = datetime.now().strftime('%Y-%m-%d')
+
     return f'''# {skill_name}
 
 TODO: 스킬에 대한 한 줄 설명을 작성하세요.
@@ -349,7 +352,7 @@ TODO: 스킬에 대한 한 줄 설명을 작성하세요.
 ## 설치
 
 ```bash
-mkdir -p .claude/skills && curl -L https://github.com/TODO_USERNAME/{skill_name}/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/{skill_name}-master .claude/skills/{skill_name}
+mkdir -p .claude/skills && curl -L https://github.com/{github_username}/{skill_name}/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/{skill_name}-master .claude/skills/{skill_name}
 ```
 
 ## 필요 환경
@@ -358,11 +361,11 @@ mkdir -p .claude/skills && curl -L https://github.com/TODO_USERNAME/{skill_name}
 
 ---
 
-Last updated: TODO_DATE
+Last updated: {today}
 '''
 
 
-def init_skill(skill_name: str, output_path: str) -> None:
+def init_skill(skill_name: str, output_path: str, github_username: str) -> None:
     """스킬 디렉토리 구조 초기화"""
 
     # 스킬 디렉토리 경로
@@ -384,7 +387,7 @@ def init_skill(skill_name: str, output_path: str) -> None:
     # SKILL.md 생성
     skill_md_path = os.path.join(skill_dir, 'SKILL.md')
     with open(skill_md_path, 'w', encoding='utf-8') as f:
-        f.write(create_skill_md(skill_name))
+        f.write(create_skill_md(skill_name, github_username))
     print(f"✓ 파일 생성: {skill_md_path}")
 
     # 예시 스크립트 생성
@@ -416,7 +419,7 @@ def init_skill(skill_name: str, output_path: str) -> None:
     # README.md 생성 (GitHub 배포용)
     readme_path = os.path.join(skill_dir, 'README.md')
     with open(readme_path, 'w', encoding='utf-8') as f:
-        f.write(create_readme(skill_name))
+        f.write(create_readme(skill_name, github_username))
     print(f"✓ 파일 생성: {readme_path}")
 
     # deploy.md 커맨드 생성
@@ -427,11 +430,12 @@ def init_skill(skill_name: str, output_path: str) -> None:
 
     print(f"\n🎉 스킬 '{skill_name}' 초기화 완료!")
     print(f"   위치: {skill_dir}")
+    print(f"   GitHub 저장소: {github_username}/{skill_name}")
     print("\n다음 단계:")
     print("1. SKILL.md를 편집하여 스킬 설명 작성")
-    print("2. README.md의 TODO_USERNAME과 TODO_DATE 수정")
-    print("3. 필요한 scripts/, references/, assets/ 파일 추가")
-    print("4. 불필요한 예시 파일 삭제")
+    print("2. 필요한 scripts/, references/, assets/ 파일 추가")
+    print("3. 불필요한 예시 파일 삭제")
+    print("4. GitHub에 저장소 생성 (gh repo create 또는 웹)")
     print("5. /deploy 커맨드로 GitHub에 배포")
 
 
@@ -442,6 +446,11 @@ def main():
     parser.add_argument(
         'skill_name',
         help='스킬 이름 (예: my-skill)'
+    )
+    parser.add_argument(
+        '--github-username',
+        required=True,
+        help='GitHub 계정명 (필수)'
     )
     parser.add_argument(
         '--path',
@@ -456,6 +465,11 @@ def main():
         print("에러: 스킬 이름은 영문자, 숫자, 하이픈, 언더스코어만 사용 가능합니다.")
         sys.exit(1)
 
+    # GitHub 계정명 검증
+    if not args.github_username:
+        print("에러: GitHub 계정명은 필수입니다.")
+        sys.exit(1)
+
     # 출력 경로 확인
     output_path = os.path.abspath(args.path)
     if not os.path.exists(output_path):
@@ -468,7 +482,7 @@ def main():
         print(f"에러: 스킬 디렉토리가 이미 존재합니다: {skill_dir}")
         sys.exit(1)
 
-    init_skill(args.skill_name, output_path)
+    init_skill(args.skill_name, output_path, args.github_username)
 
 
 if __name__ == "__main__":

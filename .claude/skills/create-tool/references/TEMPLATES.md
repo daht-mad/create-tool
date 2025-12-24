@@ -35,13 +35,20 @@ Last updated: YYYY-MM-DD
 
 ## SKILL.md 템플릿
 
+**중요 규칙:**
+1. 모든 필드는 필수입니다
+2. `repo` 필드는 반드시 'username/repo-name' 형식이어야 합니다
+3. **`description`에 반드시 "다음과 같은 요청에 이 스킬을 사용하세요:" 섹션을 포함해야 합니다**
+4. 트리거 예시는 최소 2개 이상 작성하세요
+
 ```markdown
 ---
-name: skill-name
-version: 1.0.0
-repo: username/skill-name
-description: |
-  스킬 설명. 다음과 같은 요청에 이 스킬을 사용하세요:
+name: skill-name                    # 필수: 스킬 이름
+version: 1.0.0                      # 필수: semantic versioning (x.y.z)
+repo: username/skill-name           # 필수: GitHub 저장소 (username/repo-name 형식)
+description: |                      # 필수: 스킬 설명 및 트리거 조건
+  스킬에 대한 간단한 설명.
+  다음과 같은 요청에 이 스킬을 사용하세요:
   - "트리거 예시 1"
   - "트리거 예시 2"
   - "트리거 예시 3"

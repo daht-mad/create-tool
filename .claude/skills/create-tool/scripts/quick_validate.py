@@ -39,6 +39,30 @@ def validate_frontmatter(content: str) -> tuple[bool, list[str], list[str]]:
     elif not name_match.group(1).strip():
         errors.append("'name' 필드가 비어있습니다")
 
+    # version 필드 확인 (필수)
+    version_match = re.search(r'^version:\s*(.+)$', frontmatter, re.MULTILINE)
+    if not version_match:
+        errors.append("frontmatter에 'version' 필드가 필요합니다")
+    elif not version_match.group(1).strip():
+        errors.append("'version' 필드가 비어있습니다")
+    else:
+        version = version_match.group(1).strip()
+        if not re.match(r'^\d+\.\d+\.\d+$', version):
+            warnings.append("version은 semantic versioning 형식(x.y.z)을 권장합니다")
+
+    # repo 필드 확인 (필수)
+    repo_match = re.search(r'^repo:\s*(.+)$', frontmatter, re.MULTILINE)
+    if not repo_match:
+        errors.append("frontmatter에 'repo' 필드가 필요합니다 (예: username/skill-name)")
+    else:
+        repo = repo_match.group(1).strip()
+        if not repo:
+            errors.append("'repo' 필드가 비어있습니다")
+        elif 'TODO' in repo:
+            errors.append("'repo' 필드의 TODO 플레이스홀더를 실제 값으로 변경하세요")
+        elif '/' not in repo:
+            warnings.append("'repo' 필드는 'username/repo-name' 형식이어야 합니다")
+
     # description 필드 확인
     if 'description:' not in frontmatter:
         errors.append("frontmatter에 'description' 필드가 필요합니다")
@@ -49,6 +73,12 @@ def validate_frontmatter(content: str) -> tuple[bool, list[str], list[str]]:
             desc_content = desc_match.group(1).strip()
             if len(desc_content) < 20:
                 warnings.append("description이 너무 짧습니다. 더 상세히 작성하세요.")
+
+            # 트리거 조건 확인 (필수)
+            if '다음과 같은 요청에 이 스킬을 사용하세요:' not in desc_content:
+                errors.append("description에 '다음과 같은 요청에 이 스킬을 사용하세요:' 섹션이 필요합니다")
+            elif desc_content.count('-') < 2:
+                warnings.append("트리거 예시를 최소 2개 이상 작성하세요")
 
     # TODO 플레이스홀더 확인
     if 'TODO' in frontmatter:
