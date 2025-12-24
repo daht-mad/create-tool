@@ -80,6 +80,34 @@ curl -L https://github.com/[사용자명]/[스킬이름]/raw/master/[스킬이�
 
 스킬 작성 시 참고할 템플릿: [TEMPLATES.md](references/TEMPLATES.md)
 
+## 버그 수정 기여
+
+설치한 스킬에서 버그를 발견했다면, 원작자에게 PR을 보내 기여할 수 있습니다:
+
+```bash
+python3 .claude/skills/create-tool/scripts/contribute_fix.py [스킬경로] --message "버그 설명"
+```
+
+자세한 가이드: [WORKFLOW.md - 버그 수정 및 기여 가이드](references/WORKFLOW.md#버그-수정-및-기여-가이드)
+
+### 스킬 수정 감지 시 자동 기여 제안
+
+**중요**: 사용자가 설치한 스킬의 파일을 수정했다면, 수정 완료 후 다음과 같이 기여 여부를 물어보세요:
+
+```
+수정하신 내용을 원작자에게 PR로 보내시겠어요?
+다른 사용자들도 이 수정사항을 받을 수 있습니다.
+
+1. 예, PR 보내기
+2. 아니요, 로컬에서만 사용
+```
+
+사용자가 "예"를 선택하면:
+
+```bash
+python3 .claude/skills/create-tool/scripts/contribute_fix.py [스킬경로] --message "[수정 내용 요약]"
+```
+
 ## 출력 패턴
 
 일관된 출력을 위한 패턴: [OUTPUT-PATTERNS.md](references/OUTPUT-PATTERNS.md)

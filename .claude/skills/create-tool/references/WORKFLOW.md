@@ -214,3 +214,65 @@ curl -L https://github.com/[사용자명]/[스킬이름]/raw/master/[스킬이�
 
 🚀 사용: 스킬 트리거 조건에 맞는 요청을 하면 자동 실행됩니다.
 ```
+
+---
+
+## 버그 수정 및 기여 가이드
+
+설치한 스킬에서 버그를 발견하고 수정했다면, 원작자에게 PR을 보내 기여할 수 있습니다.
+
+### 기여 워크플로우
+
+1. **버그 수정**: `.claude/skills/[스킬이름]/` 폴더에서 직접 수정
+
+2. **PR 제출 준비**:
+
+   ```bash
+   # 원본 저장소 fork (GitHub에서)
+   # fork한 저장소 clone
+   git clone https://github.com/[내계정]/[스킬이름].git
+   cd [스킬이름]
+
+   # 수정한 파일들 복사
+   cp -r ~/.claude/skills/[스킬이름]/* .
+
+   # 브랜치 생성 및 커밋
+   git checkout -b fix/버그설명
+   git add .
+   git commit -m "fix: 버그 설명"
+   git push origin fix/버그설명
+   ```
+
+3. **PR 생성**:
+
+   ```bash
+   gh pr create --title "fix: 버그 설명" --body "## 문제
+   [버그 설명]
+
+   ## 수정 내용
+   [수정한 내용]
+
+   ## 테스트
+   [테스트 방법]"
+   ```
+
+### 자동화 스크립트 사용
+
+contribute_fix.py 스크립트로 간편하게 PR을 제출할 수 있습니다:
+
+```bash
+python3 .claude/skills/create-tool/scripts/contribute_fix.py [스킬경로] --message "버그 설명"
+```
+
+스크립트가 자동으로:
+
+- 원본 저장소 fork
+- 수정사항 커밋
+- PR 생성
+
+### PR 머지 후
+
+원작자가 PR을 머지하면:
+
+1. 원작자가 버전 업데이트 후 재배포
+2. 다른 사용자들이 자동 업데이트로 수정사항 받음
