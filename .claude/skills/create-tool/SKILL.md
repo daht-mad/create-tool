@@ -47,7 +47,8 @@ allowed-tools: Bash(git:*), Bash(npm:*), Bash(mkdir:*), Bash(which:*), Bash(gh:*
 
 ```
 skill-name/
-├── SKILL.md           # 필수: 스킬 정의
+├── README.md          # 필수: GitHub 배포용 (사람용)
+├── SKILL.md           # 필수: 스킬 정의 (AI용)
 ├── scripts/           # 선택: 실행 스크립트
 ├── references/        # 선택: 참조 문서
 └── assets/            # 선택: 템플릿, 이미지 등
@@ -61,7 +62,7 @@ skill-name/
 📦 저장소: https://github.com/[사용자명]/[스킬이름]
 
 📥 팀원 설치 명령어 (한 줄):
-curl -L https://github.com/[사용자명]/[스킬이름]/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/[스킬이름]-master .claude/skills/[스킬이름]
+mkdir -p .claude/skills && curl -sL https://github.com/[사용자명]/[스킬이름]/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/[스킬이름]-master .claude/skills/[스킬이름]
 
 🚀 사용: 스킬 트리거 조건에 맞는 요청을 하면 자동 실행됩니다.
 ```
@@ -119,8 +120,10 @@ python3 .claude/skills/create-tool/scripts/contribute_fix.py [스킬경로] --me
 
 ## 자동 업데이트
 
-스킬 실행 전 업데이트 확인:
+각 스킬에 포함된 `scripts/check_update.py`를 사용하여 독립적으로 업데이트 확인:
 
 ```bash
-python3 .claude/skills/create-tool/scripts/check_update.py .claude/skills/create-tool --auto
+python3 .claude/skills/[스킬이름]/scripts/check_update.py --auto --quiet
 ```
+
+**중요**: 스킬 실행 전 업데이트 확인을 수행해야 합니다.

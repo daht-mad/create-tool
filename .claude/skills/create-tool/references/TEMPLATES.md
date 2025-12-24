@@ -1,5 +1,38 @@
 # 스킬 템플릿
 
+## README.md 템플릿 (GitHub 배포용)
+
+```markdown
+# skill-name
+
+스킬에 대한 간단한 설명.
+
+## 기능
+
+- 기능 1
+- 기능 2
+- 기능 3
+
+## 설치
+
+\`\`\`bash
+mkdir -p .claude/skills && curl -sL https://github.com/username/skill-name/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/skill-name-master .claude/skills/skill-name
+\`\`\`
+
+## 필요 환경
+
+- Node.js 18+ / Python 3.8+
+- `npm install 패키지명` / `pip install 패키지명`
+
+---
+
+Last updated: YYYY-MM-DD
+```
+
+**중요: 날짜 작성 시 시스템이 알려주는 현재 날짜를 사용할 것. (예: 환경 정보의 Today's date 확인)**
+
+---
+
 ## SKILL.md 템플릿
 
 ```markdown
@@ -18,20 +51,6 @@ allowed-tools: Bash(python3:*), Bash(git:*), Bash(curl:*)
 # skill-name
 
 스킬에 대한 간단한 설명.
-
-## 비개발자 가이드
-
-**설치 (터미널에서 한 줄 실행 후 Claude Code 재시작):**
-
-\`\`\`bash
-mkdir -p .claude/skills && curl -L https://github.com/{username}/{skill-name}/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/{skill-name}-master .claude/skills/{skill-name}
-\`\`\`
-
-**사용:** Claude에게 "트리거 예시" 라고 말하세요.
-
-**결과:** 결과 설명.
-
----
 
 ## 실행
 
@@ -54,16 +73,12 @@ pip install 패키지명 && python scripts/process.py <입력>
 
 상세 가이드: [GUIDE.md](references/GUIDE.md)
 
-## 자동 업데이트 & 기여
+## 자동 업데이트
 
-스킬 실행 전 업데이트 확인 및 버그 수정 기여 (create-tool 필요):
+스킬 실행 전 업데이트 확인 (각 스킬에 포함된 스크립트 사용):
 
 \`\`\`bash
-# 업데이트 확인
-python3 .claude/skills/create-tool/scripts/check_update.py .claude/skills/{skill-name} --auto
-
-# 버그 수정 PR 제출
-python3 .claude/skills/create-tool/scripts/contribute_fix.py .claude/skills/{skill-name} --message "버그 설명"
+python3 scripts/check_update.py --auto --quiet
 \`\`\`
 ```
 

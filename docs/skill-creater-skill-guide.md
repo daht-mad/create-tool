@@ -103,13 +103,22 @@ Files not intended to be loaded into context, but rather used within the output 
 
 A skill should only contain essential files that directly support its functionality. Do NOT create extraneous documentation or auxiliary files, including:
 
-- README.md
 - INSTALLATION_GUIDE.md
 - QUICK_REFERENCE.md
 - CHANGELOG.md
 - etc.
 
 The skill should only contain the information needed for an AI agent to do the job at hand. It should not contain auxilary context about the process that went into creating it, setup and testing procedures, user-facing documentation, etc. Creating additional documentation files just adds clutter and confusion.
+
+**Exception: README.md for GitHub Distribution**
+
+When distributing skills via GitHub repositories, a README.md is required at the repository root. This README is for human users (not Claude) and should contain:
+
+- Skill name and brief description
+- One-line installation command
+- Basic usage examples
+
+The README serves as the entry point for GitHub visitors who need to install the skill. Keep it minimal - detailed documentation belongs in SKILL.md and references/.
 
 ### Progressive Disclosure Design Principle
 

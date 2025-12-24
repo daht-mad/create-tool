@@ -78,9 +78,11 @@ python3 scripts/init_skill.py [스킬이름] --path [저장위치]
 생성되는 구조:
 ```
 skill-name/
-├── SKILL.md           # 스킬 정의 (필수)
+├── README.md          # GitHub 배포용 (사람용)
+├── SKILL.md           # 스킬 정의 (AI용, 필수)
 ├── scripts/           # 실행 스크립트
-│   └── example.py
+│   ├── example.py
+│   └── check_update.py  # 자동 업데이트 스크립트
 ├── references/        # 참조 문서
 │   └── example.md
 └── assets/            # 템플릿, 이미지 등
@@ -180,10 +182,12 @@ git push
 📦 저장소: https://github.com/[사용자명]/[스킬이름]
 
 📥 팀원 설치 명령어 (한 줄):
-mkdir -p .claude/skills && curl -L https://github.com/[사용자명]/[스킬이름]/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/[스킬이름]-master .claude/skills/[스킬이름]
+mkdir -p .claude/skills && curl -sL https://github.com/[사용자명]/[스킬이름]/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/[스킬이름]-master .claude/skills/[스킬이름]
 
 🚀 사용: 스킬 트리거 조건에 맞는 요청을 하면 자동 실행됩니다.
 ```
+
+**중요**: 저장소 구조는 루트에 바로 `SKILL.md`와 `README.md`가 있어야 합니다. `.claude/skills/` 중첩 구조는 사용하지 않습니다.
 
 > **참고**: GitHub Archive API를 사용하면 저장소에 tar.gz 파일을 별도로 저장할 필요가 없습니다. 소스 수정 시 자동으로 최신 버전이 반영됩니다.
 
