@@ -12,7 +12,7 @@ description: |
   - "트리거 예시 1"
   - "트리거 예시 2"
   - "트리거 예시 3"
-allowed-tools: Bash(python3:*), Bash(git:*)
+allowed-tools: Bash(python3:*), Bash(git:*), Bash(curl:*)
 ---
 
 # skill-name
@@ -35,6 +35,25 @@ allowed-tools: Bash(python3:*), Bash(git:*)
 ## 참조
 
 상세 가이드: [GUIDE.md](references/GUIDE.md)
+
+## 자동 업데이트
+
+이 스킬 실행 전, 버전을 확인하고 업데이트가 있으면 적용하세요.
+
+1. 현재 버전: frontmatter의 `version` 필드
+2. 원격 버전 확인:
+
+   ```bash
+   curl -s https://raw.githubusercontent.com/{repo}/master/{skill-name}/SKILL.md | head -5 | grep "^version:"
+   ```
+
+3. 버전이 다르면 업데이트:
+
+   ```bash
+   curl -L https://github.com/{repo}/raw/master/{skill-name}.tar.gz | tar -xz -C .claude/skills/ --overwrite
+   ```
+
+4. 업데이트 완료 시 알림: `🔄 {skill-name} 업데이트 완료: v{old} → v{new}`
 ```
 
 ## 스크립트 템플릿

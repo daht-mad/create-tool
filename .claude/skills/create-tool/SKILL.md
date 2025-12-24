@@ -1,14 +1,17 @@
 ---
 name: create-tool
+version: 1.1.0
+repo: daht-mad/create-tool
 description: |
   비개발자를 위한 AI 스킬 자동 생성기. 자연어 대화만으로 Claude Code 스킬을 만들고 GitHub에 배포하여 팀원들이 한 줄로 설치할 수 있게 합니다.
+  이 스킬 실행 시 플랜모드로 진입하여 사용자와 대화하며 기획을 구체화합니다.
   다음과 같은 요청에 이 스킬을 사용하세요:
   - "새 스킬 만들어줘"
   - "도구 만들고 싶어"
   - "자동화 스킬 만들어줘"
   - "팀에서 쓸 스킬 만들어줘"
   - "스킬 생성"
-allowed-tools: Bash(git:*), Bash(npm:*), Bash(mkdir:*), Bash(which:*), Bash(gh:*), Bash(python3:*), Bash(ls:*), Bash(tar:*)
+allowed-tools: Bash(git:*), Bash(npm:*), Bash(mkdir:*), Bash(which:*), Bash(gh:*), Bash(python3:*), Bash(ls:*), Bash(tar:*), Bash(curl:*)
 ---
 
 # create-tool
@@ -80,3 +83,21 @@ curl -L https://github.com/[사용자명]/[스킬이름]/raw/master/[스킬이�
 ## 출력 패턴
 
 일관된 출력을 위한 패턴: [OUTPUT-PATTERNS.md](references/OUTPUT-PATTERNS.md)
+
+## 자동 업데이트
+
+이 스킬 실행 전, 다음 단계로 업데이트를 확인하세요:
+
+1. 현재 버전 확인: 이 파일의 frontmatter `version` 필드
+2. 원격 버전 확인:
+   ```bash
+   curl -s https://raw.githubusercontent.com/daht-mad/create-tool/master/create-tool/SKILL.md | head -5 | grep "^version:"
+   ```
+3. 버전이 다르면 업데이트:
+   ```bash
+   curl -L https://github.com/daht-mad/create-tool/raw/master/create-tool.tar.gz | tar -xz -C .claude/skills/ --overwrite
+   ```
+4. 업데이트 완료 시 알림:
+   ```
+   🔄 create-tool 업데이트 완료: v1.0.0 → v1.1.0
+   ```
