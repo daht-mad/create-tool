@@ -16,8 +16,9 @@ $ARGUMENTS
    - `git status --porcelain`으로 변경사항 확인
    - 변경사항이 없으면 "✓ 변경사항 없음" 출력 후 종료
 
-2. **버전 업데이트**:
-   - 변경된 파일 중 `SKILL.md` 또는 `scripts/` 내 파일이 있으면 SKILL.md의 patch 버전 +1 (예: 1.0.2 → 1.0.3)
+2. **버전 자동 업데이트**:
+   - `python3 .claude/skills/create-tool/scripts/auto_version_bump.py .` 실행
+   - 변경된 파일 중 `SKILL.md`, `scripts/`, `references/` 내 파일이 있으면 patch 버전 +1 (예: 1.0.2 → 1.0.3)
    - README.md만 변경된 경우 버전 유지
 
 3. **Git 배포**:

@@ -1,6 +1,6 @@
 ---
 name: create-tool
-version: 1.1.3
+version: 1.1.4
 repo: daht-mad/create-tool
 description: |
   비개발자를 위한 AI 스킬 자동 생성기. 자연어 대화만으로 Claude Code 스킬을 만들고 GitHub에 배포하여 팀원들이 한 줄로 설치할 수 있게 합니다.
@@ -75,6 +75,8 @@ mkdir -p .claude/skills && curl -sL https://github.com/[사용자명]/[스킬이
 | -------- | ---- |
 | `scripts/init_skill.py` | 새 스킬 초기화 |
 | `scripts/quick_validate.py` | 스킬 검증 |
+| `scripts/auto_version_bump.py` | 버전 자동 증가 |
+| `scripts/auto_deploy.py` | GitHub 자동 배포 |
 | `scripts/check_update.py` | 스킬 업데이트 확인 |
 | `scripts/contribute_fix.py` | 버그 수정 PR 제출 |
 
