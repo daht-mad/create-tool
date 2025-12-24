@@ -16,6 +16,8 @@ def create_skill_md(skill_name: str) -> str:
     """SKILL.md 템플릿 생성"""
     return f'''---
 name: {skill_name}
+version: 1.0.0
+repo: TODO/username/{skill_name}
 description: |
   TODO: 이 스킬이 무엇을 하는지 설명하세요.
   다음과 같은 요청에 이 스킬을 사용하세요:
