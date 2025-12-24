@@ -142,26 +142,25 @@ python3 scripts/quick_validate.py [스킬경로]
 
 ## Phase 7: 패키징
 
-package_skill.py로 배포 파일 생성:
+package_skill.py로 배포 파일 생성 (자동으로 버전이 증가됩니다):
 
 ```bash
+# 기본: patch 버전 자동 증가 (1.0.0 → 1.0.1)
 python3 scripts/package_skill.py [스킬경로] [출력경로]
+
+# minor 버전 증가 (1.0.0 → 1.1.0)
+python3 scripts/package_skill.py [스킬경로] [출력경로] --minor
+
+# major 버전 증가 (1.0.0 → 2.0.0)
+python3 scripts/package_skill.py [스킬경로] [출력경로] --major
+
+# 버전 증가 없이 패키징
+python3 scripts/package_skill.py [스킬경로] [출력경로] --no-bump
 ```
 
 생성 파일:
 
-- `[스킬이름].skill` - zip 형태
 - `[스킬이름].tar.gz` - tar.gz 형태
-
-### 업데이트 배포 시
-
-스킬을 업데이트하여 재배포할 때는 반드시 SKILL.md의 `version`을 올려야 합니다:
-
-```yaml
-version: 1.0.0  →  version: 1.0.1
-```
-
-버전을 올리지 않으면 기존 사용자에게 업데이트가 전달되지 않습니다.
 
 ## Phase 8: Git 및 GitHub 배포
 

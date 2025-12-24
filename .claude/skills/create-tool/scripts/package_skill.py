@@ -2,9 +2,13 @@
 """
 스킬 패키징 스크립트
 스킬을 검증하고 .tar.gz 파일로 패키징합니다.
+패키징 시 자동으로 버전이 증가합니다.
 
 사용법:
     python3 package_skill.py <path/to/skill-folder> [output-directory]
+    python3 package_skill.py <path/to/skill-folder> [output-directory] --minor
+    python3 package_skill.py <path/to/skill-folder> [output-directory] --major
+    python3 package_skill.py <path/to/skill-folder> [output-directory] --no-bump
 """
 
 import argparse
@@ -97,6 +101,62 @@ def get_skill_name(skill_path: str) -> str:
     return Path(skill_path).name
 
 
+def get_current_version(skill_path: str) -> str:
+    """SKILL.md에서 현재 버전 추출"""
+    skill_md = Path(skill_path) / 'SKILL.md'
+    with open(skill_md, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    match = re.search(r'^version:\s*(.+)$', content, re.MULTILINE)
+    if match:
+        return match.group(1).strip()
+
+    return "1.0.0"
+
+
+def bump_version(version: str, bump_type: str = "patch") -> str:
+    """시맨틱 버전 증가"""
+    parts = version.split('.')
+    if len(parts) != 3:
+        parts = ['1', '0', '0']
+
+    major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
+
+    if bump_type == "major":
+        major += 1
+        minor = 0
+        patch = 0
+    elif bump_type == "minor":
+        major = major
+        minor += 1
+        patch = 0
+    else:  # patch
+        patch += 1
+
+    return f"{major}.{minor}.{patch}"
+
+
+def update_version_in_file(skill_path: str, new_version: str) -> str:
+    """SKILL.md의 버전 업데이트"""
+    skill_md = Path(skill_path) / 'SKILL.md'
+    with open(skill_md, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    # 버전 필드 업데이트
+    updated_content = re.sub(
+        r'^version:\s*.+$',
+        f'version: {new_version}',
+        content,
+        count=1,
+        flags=re.MULTILINE
+    )
+
+    with open(skill_md, 'w', encoding='utf-8') as f:
+        f.write(updated_content)
+
+    return new_version
+
+
 def package_skill(skill_path: str, output_dir: str) -> str:
     """스킬을 .tar.gz 파일로 패키징"""
     skill_path = Path(skill_path).resolve()
@@ -152,6 +212,21 @@ def main():
         default='.',
         help='출력 디렉토리 (기본값: 현재 디렉토리)'
     )
+    parser.add_argument(
+        '--major',
+        action='store_true',
+        help='major 버전 증가 (1.0.0 → 2.0.0)'
+    )
+    parser.add_argument(
+        '--minor',
+        action='store_true',
+        help='minor 버전 증가 (1.0.0 → 1.1.0)'
+    )
+    parser.add_argument(
+        '--no-bump',
+        action='store_true',
+        help='버전 증가 없이 패키징'
+    )
 
     args = parser.parse_args()
 
@@ -181,6 +256,22 @@ def main():
 
     print("✓ 검증 통과")
     print()
+
+    # 버전 업데이트
+    if not args.no_bump:
+        old_version = get_current_version(skill_path)
+
+        if args.major:
+            bump_type = "major"
+        elif args.minor:
+            bump_type = "minor"
+        else:
+            bump_type = "patch"
+
+        new_version = bump_version(old_version, bump_type)
+        update_version_in_file(skill_path, new_version)
+        print(f"📌 버전 업데이트: {old_version} → {new_version}")
+        print()
 
     # 패키징
     print("📦 패키징 중...")
