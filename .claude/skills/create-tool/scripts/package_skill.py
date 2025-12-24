@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 스킬 패키징 스크립트
-스킬을 검증하고 .skill 파일 (zip)로 패키징합니다.
+스킬을 검증하고 .tar.gz 파일로 패키징합니다.
 
 사용법:
     python3 package_skill.py <path/to/skill-folder> [output-directory]
@@ -10,8 +10,8 @@
 import argparse
 import os
 import re
+import shutil
 import sys
-import zipfile
 from pathlib import Path
 
 
@@ -98,41 +98,49 @@ def get_skill_name(skill_path: str) -> str:
 
 
 def package_skill(skill_path: str, output_dir: str) -> str:
-    """스킬을 .skill 파일로 패키징"""
+    """스킬을 .tar.gz 파일로 패키징"""
     skill_path = Path(skill_path).resolve()
     output_dir = Path(output_dir).resolve()
 
     skill_name = get_skill_name(str(skill_path))
-    output_file = output_dir / f"{skill_name}.skill"
+
+    # tar.gz 파일 생성
+    tar_file = output_dir / f"{skill_name}.tar.gz"
 
     # 기존 파일 삭제
-    if output_file.exists():
-        output_file.unlink()
+    if tar_file.exists():
+        tar_file.unlink()
 
-    # zip 파일 생성
-    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for root, dirs, files in os.walk(skill_path):
-            # 제외할 디렉토리
-            dirs[:] = [d for d in dirs if d not in [
-                '__pycache__', '.git', 'node_modules', '.DS_Store'
-            ]]
+    # 포함할 파일 목록 출력
+    for root, dirs, files in os.walk(skill_path):
+        # 제외할 디렉토리
+        dirs[:] = [d for d in dirs if d not in [
+            '__pycache__', '.git', 'node_modules', '.DS_Store'
+        ]]
 
-            for file in files:
-                # 제외할 파일
-                if file in ['.DS_Store', '.gitignore']:
-                    continue
+        for file in files:
+            # 제외할 파일
+            if file in ['.DS_Store', '.gitignore']:
+                continue
 
-                file_path = Path(root) / file
-                arc_name = file_path.relative_to(skill_path)
-                zf.write(file_path, arc_name)
-                print(f"  추가: {arc_name}")
+            file_path = Path(root) / file
+            arc_name = file_path.relative_to(skill_path)
+            print(f"  추가: {arc_name}")
 
-    return str(output_file)
+    # tar.gz 생성
+    shutil.make_archive(
+        str(output_dir / skill_name),
+        'gztar',
+        os.path.dirname(skill_path),
+        os.path.basename(skill_path)
+    )
+
+    return str(tar_file)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='스킬을 검증하고 .skill 파일로 패키징합니다.'
+        description='스킬을 검증하고 .tar.gz 파일로 패키징합니다.'
     )
     parser.add_argument(
         'skill_path',
@@ -181,17 +189,6 @@ def main():
     print()
     print(f"🎉 패키징 완료!")
     print(f"   출력: {output_file}")
-
-    # tar.gz 형태로도 생성
-    import shutil
-    tar_file = output_file.replace('.skill', '.tar.gz')
-    shutil.make_archive(
-        output_file.replace('.skill', ''),
-        'gztar',
-        os.path.dirname(skill_path),
-        os.path.basename(skill_path)
-    )
-    print(f"   출력: {tar_file}")
 
 
 if __name__ == "__main__":
