@@ -8,16 +8,16 @@
 
 ### 엄격한 템플릿
 
-API 응답, 설정 파일 등 정확한 형식이 필요한 경우:
+YAML frontmatter 등 정확한 형식이 필요한 경우:
 
-```json
-{
-  "name": "@[스코프]/[도구이름]",
-  "version": "1.0.0",
-  "bin": {
-    "[스코프토큰]-[도구이름]": "./bin/[도구이름].js"
-  }
-}
+```yaml
+---
+name: skill-name
+description: |
+  스킬 설명
+  - "트리거 예시 1"
+  - "트리거 예시 2"
+---
 ```
 
 ### 유연한 템플릿
@@ -25,17 +25,13 @@ API 응답, 설정 파일 등 정확한 형식이 필요한 경우:
 상황에 맞게 조정이 필요한 경우:
 
 ```markdown
-# [도구이름]
+# [스킬이름]
 
 [기능 설명 - 상황에 맞게 작성]
 
-## 설치
-
-[설치 방법 - 환경에 따라 조정]
-
 ## 사용법
 
-[사용 예시 - 도구 특성에 맞게 작성]
+[사용 예시 - 스킬 특성에 맞게 작성]
 ```
 
 ## 예시 패턴
@@ -46,15 +42,15 @@ API 응답, 설정 파일 등 정확한 형식이 필요한 경우:
 
 **입력:**
 ```
-새 파일 추가하고 버그 수정함
+새 스킬 추가함
 ```
 
 **출력:**
 ```
-feat: 새 기능 추가 및 버그 수정
+feat: 새 스킬 추가
 
-- 새 파일 추가
-- 기존 버그 수정
+- SKILL.md 작성
+- scripts 추가
 
 🤖 Generated with Claude Code
 ```
@@ -62,21 +58,18 @@ feat: 새 기능 추가 및 버그 수정
 ### 완료 메시지 예시
 
 **입력:**
-도구 생성 완료 상태
+스킬 생성 완료 상태
 
 **출력:**
 ```
-🎉 도구 생성 완료!
+🎉 스킬 생성 완료!
 
-📦 저장소: https://github.com/username/tool-name
+📦 저장소: https://github.com/username/skill-name
 
 📥 팀원 설치 명령어:
-mkdir -p .claude/commands && curl -o .claude/commands/tool-name.md \
-  https://raw.githubusercontent.com/username/tool-name/master/.claude/commands/tool-name.md
+curl -L https://github.com/username/skill-name/raw/master/skill-name.tar.gz | tar -xz -C .claude/skills/
 
-🚀 사용법:
-- Claude Code: /tool-name [인자]
-- 터미널: username-tool-name [인자]
+🚀 사용: 스킬 트리거 조건에 맞는 요청을 하면 자동 실행됩니다.
 ```
 
 ## 진행 상황 표시 패턴
@@ -84,12 +77,13 @@ mkdir -p .claude/commands && curl -o .claude/commands/tool-name.md \
 사용자에게 진행 상황을 알립니다.
 
 ```
-✓ 프로젝트 구조 생성 완료
-✓ TypeScript 설정 완료
-✓ 코드 작성 완료
-⏳ 빌드 중...
-✓ 빌드 완료
-✓ 테스트 통과
+✓ 스킬 구조 생성 완료
+✓ SKILL.md 작성 완료
+✓ scripts 작성 완료
+⏳ 검증 중...
+✓ 검증 통과
+⏳ 패키징 중...
+✓ tar.gz 생성 완료
 ⏳ GitHub에 푸시 중...
 ✓ 배포 완료!
 ```
@@ -99,15 +93,14 @@ mkdir -p .claude/commands && curl -o .claude/commands/tool-name.md \
 문제 상황을 명확히 전달합니다.
 
 ```
-❌ 에러: 파일을 찾을 수 없습니다
+❌ 에러: SKILL.md를 찾을 수 없습니다
 
-원인: 지정된 경로에 파일이 존재하지 않습니다.
-경로: /path/to/file.md
+원인: 지정된 경로에 SKILL.md 파일이 존재하지 않습니다.
+경로: /path/to/skill
 
 해결 방법:
-1. 파일 경로가 올바른지 확인하세요
-2. 파일이 존재하는지 확인하세요
-3. 상대 경로 대신 절대 경로를 사용해보세요
+1. 스킬 경로가 올바른지 확인하세요
+2. init_skill.py로 스킬을 초기화하세요
 ```
 
 ## 핵심 원칙
