@@ -111,6 +111,32 @@ echo "처리 중: $INPUT"
 echo "✓ 완료!"
 ```
 
+### Node.js 스크립트 (ES Modules)
+
+```javascript
+#!/usr/bin/env node
+/**
+ * 스크립트 설명
+ * 사용법: node script.mjs <입력>
+ */
+
+const args = process.argv.slice(2);
+
+if (args.length === 0) {
+    console.error('사용법: node script.mjs <입력>');
+    process.exit(1);
+}
+
+const input = args[0];
+console.log(`처리 중: ${input}`);
+
+// 메인 로직
+
+console.log('✓ 완료!');
+```
+
+**참고:** `.mjs` 확장자를 사용하거나, `package.json`에 `"type": "module"` 추가 필요.
+
 ## 참조 문서 템플릿
 
 ```markdown
@@ -159,6 +185,8 @@ echo "✓ 완료!"
 
 ## 의존성 추천
 
+### Python
+
 | 용도 | 추천 패키지 |
 | ---- | ----------- |
 | PDF | pypdf, pdf2image |
@@ -166,3 +194,13 @@ echo "✓ 완료!"
 | 이미지 | Pillow |
 | HTTP | requests |
 | CLI | argparse, click |
+
+### Node.js
+
+| 용도 | 추천 패키지 |
+| ---- | ----------- |
+| PDF | md-to-pdf, pdf-lib |
+| Excel | xlsx, exceljs |
+| 이미지 | sharp, jimp |
+| HTTP | axios, node-fetch |
+| CLI | commander, yargs |
