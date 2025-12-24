@@ -11,7 +11,7 @@
 ## 설치
 
 ```bash
-mkdir -p .claude/skills && curl -sL https://github.com/daht-mad/create-tool/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/create-tool-master .claude/skills/create-tool
+mkdir -p .claude/skills .claude/commands && curl -sL https://github.com/daht-mad/create-tool/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && cp -r /tmp/create-tool-master/.claude/skills/create-tool .claude/skills/ && cp /tmp/create-tool-master/.claude/commands/deploy.md .claude/commands/ 2>/dev/null || true && rm -rf /tmp/create-tool-master
 ```
 
 Claude Code를 재시작하면 `/create-tool` 커맨드를 사용할 수 있습니다.
