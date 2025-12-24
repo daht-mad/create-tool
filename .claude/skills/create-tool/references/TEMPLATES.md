@@ -5,6 +5,8 @@
 ```markdown
 ---
 name: skill-name
+version: 1.0.0
+repo: username/skill-name
 description: |
   스킬 설명. 다음과 같은 요청에 이 스킬을 사용하세요:
   - "트리거 예시 1"

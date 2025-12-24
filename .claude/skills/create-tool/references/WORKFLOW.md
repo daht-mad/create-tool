@@ -59,12 +59,21 @@ skill-name/
 ```yaml
 ---
 name: skill-name
+version: 1.0.0
+repo: username/skill-name
 description: |
   스킬 설명. 다음과 같은 요청에 이 스킬을 사용하세요:
   - "트리거 예시 1"
   - "트리거 예시 2"
 ---
 ```
+
+**버전 필드 설명:**
+
+- `version`: 시맨틱 버전 (예: 1.0.0, 1.0.1)
+- `repo`: GitHub 저장소 경로 (예: daht-mad/md2pdf)
+
+이 필드들은 자동 업데이트 기능을 위해 필요합니다.
 
 ### 본문 구성
 
@@ -105,8 +114,19 @@ python3 scripts/package_skill.py [스킬경로] [출력경로]
 ```
 
 생성 파일:
+
 - `[스킬이름].skill` - zip 형태
 - `[스킬이름].tar.gz` - tar.gz 형태
+
+### 업데이트 배포 시
+
+스킬을 업데이트하여 재배포할 때는 반드시 SKILL.md의 `version`을 올려야 합니다:
+
+```yaml
+version: 1.0.0  →  version: 1.0.1
+```
+
+버전을 올리지 않으면 기존 사용자에게 업데이트가 전달되지 않습니다.
 
 ## Phase 8: Git 및 GitHub 배포
 
@@ -118,9 +138,34 @@ gh repo create [스킬이름] --public --source=. --remote=origin --push
 ```
 
 GitHub CLI가 없으면 수동 방법 안내:
+
 1. https://github.com/new 접속
 2. 저장소 이름 입력
 3. git remote add origin 후 push
+
+### 저장소 생성 후 repo 필드 업데이트
+
+GitHub 저장소 생성 후, `gh repo view --json owner,name`으로 정확한 저장소 경로를 확인하고 SKILL.md의 `repo` 필드를 업데이트합니다:
+
+```bash
+# 저장소 정보 확인
+gh repo view --json owner,name
+
+# SKILL.md의 repo 필드 업데이트
+repo: [owner]/[name]
+```
+
+그 후 다시 패키징하고 push합니다:
+
+```bash
+# 재패키징
+python3 scripts/package_skill.py [스킬경로] [출력경로]
+
+# 변경사항 커밋 및 push
+git add .
+git commit -m "fix: repo 필드 업데이트"
+git push
+```
 
 ## Phase 9: 완료 요약
 
