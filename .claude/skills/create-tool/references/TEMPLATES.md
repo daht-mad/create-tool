@@ -19,9 +19,27 @@ allowed-tools: Bash(python3:*), Bash(git:*), Bash(curl:*)
 
 스킬에 대한 간단한 설명.
 
-## 사용법
+## 비개발자 가이드
 
-기본 사용 방법 설명.
+**설치 (터미널에서 한 줄 실행 후 Claude Code 재시작):**
+
+\`\`\`bash
+mkdir -p .claude/skills && curl -L https://github.com/{username}/{skill-name}/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/{skill-name}-master .claude/skills/{skill-name}
+\`\`\`
+
+**사용:** Claude에게 "트리거 예시" 라고 말하세요.
+
+**결과:** 결과 설명.
+
+---
+
+## 실행
+
+의존성 설치 후 스크립트 실행:
+
+\`\`\`bash
+pip install 패키지명 && python scripts/process.py <입력>
+\`\`\`
 
 ## 주요 기능
 
@@ -43,17 +61,27 @@ allowed-tools: Bash(python3:*), Bash(git:*), Bash(curl:*)
 1. 현재 버전: frontmatter의 `version` 필드
 2. 원격 버전 확인:
 
-   ```bash
+   \`\`\`bash
    curl -s https://raw.githubusercontent.com/{repo}/master/{skill-name}/SKILL.md | head -5 | grep "^version:"
-   ```
+   \`\`\`
 
 3. 버전이 다르면 업데이트:
 
-   ```bash
+   \`\`\`bash
    curl -L https://github.com/{repo}/raw/master/{skill-name}.tar.gz | tar -xz -C .claude/skills/ --overwrite
-   ```
+   \`\`\`
 
 4. 업데이트 완료 시 알림: `🔄 {skill-name} 업데이트 완료: v{old} → v{new}`
+
+## 버그 수정 기여
+
+이 스킬을 사용하다가 버그를 발견하고 수정했다면, 원작자에게 PR을 보내 다른 사용자들도 수정사항을 받을 수 있게 해주세요.
+
+\`\`\`bash
+python3 .claude/skills/create-tool/scripts/contribute_fix.py .claude/skills/{skill-name} --message "버그 설명"
+\`\`\`
+
+> **참고**: create-tool 스킬이 설치되어 있어야 합니다.
 ```
 
 ## 스크립트 템플릿

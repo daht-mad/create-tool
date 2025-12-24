@@ -140,29 +140,7 @@ python3 scripts/quick_validate.py [스킬경로]
 - TODO 플레이스홀더 제거 여부
 - 참조 파일 존재 여부
 
-## Phase 7: 패키징
-
-package_skill.py로 배포 파일 생성 (자동으로 버전이 증가됩니다):
-
-```bash
-# 기본: patch 버전 자동 증가 (1.0.0 → 1.0.1)
-python3 scripts/package_skill.py [스킬경로] [출력경로]
-
-# minor 버전 증가 (1.0.0 → 1.1.0)
-python3 scripts/package_skill.py [스킬경로] [출력경로] --minor
-
-# major 버전 증가 (1.0.0 → 2.0.0)
-python3 scripts/package_skill.py [스킬경로] [출력경로] --major
-
-# 버전 증가 없이 패키징
-python3 scripts/package_skill.py [스킬경로] [출력경로] --no-bump
-```
-
-생성 파일:
-
-- `[스킬이름].tar.gz` - tar.gz 형태
-
-## Phase 8: Git 및 GitHub 배포
+## Phase 7: Git 및 GitHub 배포
 
 ```bash
 git init
@@ -187,13 +165,6 @@ gh repo view --json owner,name
 
 # SKILL.md의 repo 필드 업데이트
 repo: [owner]/[name]
-```
-
-그 후 다시 패키징하고 push합니다:
-
-```bash
-# 재패키징
-python3 scripts/package_skill.py [스킬경로] [출력경로]
 
 # 변경사항 커밋 및 push
 git add .
@@ -201,7 +172,7 @@ git commit -m "fix: repo 필드 업데이트"
 git push
 ```
 
-## Phase 9: 완료 요약
+## Phase 8: 완료 요약
 
 ```
 🎉 스킬 생성 완료!
@@ -209,10 +180,12 @@ git push
 📦 저장소: https://github.com/[사용자명]/[스킬이름]
 
 📥 팀원 설치 명령어 (한 줄):
-curl -L https://github.com/[사용자명]/[스킬이름]/raw/master/[스킬이름].tar.gz | tar -xz -C .claude/skills/
+mkdir -p .claude/skills && curl -L https://github.com/[사용자명]/[스킬이름]/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/[스킬이름]-master .claude/skills/[스킬이름]
 
 🚀 사용: 스킬 트리거 조건에 맞는 요청을 하면 자동 실행됩니다.
 ```
+
+> **참고**: GitHub Archive API를 사용하면 저장소에 tar.gz 파일을 별도로 저장할 필요가 없습니다. 소스 수정 시 자동으로 최신 버전이 반영됩니다.
 
 ---
 

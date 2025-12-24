@@ -30,9 +30,8 @@ allowed-tools: Bash(git:*), Bash(npm:*), Bash(mkdir:*), Bash(which:*), Bash(gh:*
 1. **대화** - 스킬 아이디어를 자연어로 설명
 2. **생성** - SKILL.md, scripts, references 자동 생성
 3. **검증** - quick_validate.py로 검증
-4. **패키징** - package_skill.py로 .tar.gz 생성
-5. **배포** - GitHub에 자동 푸시
-6. **공유** - 한 줄 설치 명령어 제공
+4. **배포** - GitHub에 자동 푸시
+5. **공유** - 한 줄 설치 명령어 제공 (GitHub Archive API 활용)
 
 자세한 단계별 가이드: [WORKFLOW.md](references/WORKFLOW.md)
 
@@ -62,7 +61,7 @@ skill-name/
 📦 저장소: https://github.com/[사용자명]/[스킬이름]
 
 📥 팀원 설치 명령어 (한 줄):
-curl -L https://github.com/[사용자명]/[스킬이름]/raw/master/[스킬이름].tar.gz | tar -xz -C .claude/skills/
+curl -L https://github.com/[사용자명]/[스킬이름]/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && mv /tmp/[스킬이름]-master .claude/skills/[스킬이름]
 
 🚀 사용: 스킬 트리거 조건에 맞는 요청을 하면 자동 실행됩니다.
 ```
@@ -75,11 +74,42 @@ curl -L https://github.com/[사용자명]/[스킬이름]/raw/master/[스킬이�
 | -------- | ---- |
 | `scripts/init_skill.py` | 새 스킬 초기화 |
 | `scripts/quick_validate.py` | 스킬 검증 |
-| `scripts/package_skill.py` | 스킬 패키징 (.tar.gz) |
 
 ## 템플릿
 
 스킬 작성 시 참고할 템플릿: [TEMPLATES.md](references/TEMPLATES.md)
+
+## README 작성
+
+GitHub 저장소 README 작성 가이드: [README-GUIDE.md](references/README-GUIDE.md)
+
+## 버그 수정 기여
+
+설치한 스킬에서 버그를 발견했다면, 원작자에게 PR을 보내 기여할 수 있습니다:
+
+```bash
+python3 .claude/skills/create-tool/scripts/contribute_fix.py [스킬경로] --message "버그 설명"
+```
+
+자세한 가이드: [WORKFLOW.md - 버그 수정 및 기여 가이드](references/WORKFLOW.md#버그-수정-및-기여-가이드)
+
+### 스킬 수정 감지 시 자동 기여 제안
+
+**중요**: 사용자가 설치한 스킬의 파일을 수정했다면, 수정 완료 후 다음과 같이 기여 여부를 물어보세요:
+
+```
+수정하신 내용을 원작자에게 PR로 보내시겠어요?
+다른 사용자들도 이 수정사항을 받을 수 있습니다.
+
+1. 예, PR 보내기
+2. 아니요, 로컬에서만 사용
+```
+
+사용자가 "예"를 선택하면:
+
+```bash
+python3 .claude/skills/create-tool/scripts/contribute_fix.py [스킬경로] --message "[수정 내용 요약]"
+```
 
 ## 출력 패턴
 
@@ -96,7 +126,7 @@ curl -L https://github.com/[사용자명]/[스킬이름]/raw/master/[스킬이�
    ```
 3. 버전이 다르면 업데이트:
    ```bash
-   curl -L https://github.com/daht-mad/create-tool/raw/master/create-tool.tar.gz | tar -xz -C .claude/skills/ --overwrite
+   curl -L https://github.com/daht-mad/create-tool/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && rm -rf .claude/skills/create-tool && mv /tmp/create-tool-master .claude/skills/create-tool
    ```
 4. 업데이트 완료 시 알림:
    ```
