@@ -74,6 +74,8 @@ curl -L https://github.com/[사용자명]/[스킬이름]/archive/refs/heads/mast
 | -------- | ---- |
 | `scripts/init_skill.py` | 새 스킬 초기화 |
 | `scripts/quick_validate.py` | 스킬 검증 |
+| `scripts/check_update.py` | 스킬 업데이트 확인 |
+| `scripts/contribute_fix.py` | 버그 수정 PR 제출 |
 
 ## 템플릿
 
@@ -117,18 +119,8 @@ python3 .claude/skills/create-tool/scripts/contribute_fix.py [스킬경로] --me
 
 ## 자동 업데이트
 
-이 스킬 실행 전, 다음 단계로 업데이트를 확인하세요:
+스킬 실행 전 업데이트 확인:
 
-1. 현재 버전 확인: 이 파일의 frontmatter `version` 필드
-2. 원격 버전 확인:
-   ```bash
-   curl -s https://raw.githubusercontent.com/daht-mad/create-tool/master/create-tool/SKILL.md | head -5 | grep "^version:"
-   ```
-3. 버전이 다르면 업데이트:
-   ```bash
-   curl -L https://github.com/daht-mad/create-tool/archive/refs/heads/master.tar.gz | tar -xz -C /tmp && rm -rf .claude/skills/create-tool && mv /tmp/create-tool-master .claude/skills/create-tool
-   ```
-4. 업데이트 완료 시 알림:
-   ```
-   🔄 create-tool 업데이트 완료: v1.0.0 → v1.1.0
-   ```
+```bash
+python3 .claude/skills/create-tool/scripts/check_update.py .claude/skills/create-tool --auto
+```

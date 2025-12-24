@@ -54,34 +54,17 @@ pip install 패키지명 && python scripts/process.py <입력>
 
 상세 가이드: [GUIDE.md](references/GUIDE.md)
 
-## 자동 업데이트
+## 자동 업데이트 & 기여
 
-이 스킬 실행 전, 버전을 확인하고 업데이트가 있으면 적용하세요.
-
-1. 현재 버전: frontmatter의 `version` 필드
-2. 원격 버전 확인:
-
-   \`\`\`bash
-   curl -s https://raw.githubusercontent.com/{repo}/master/{skill-name}/SKILL.md | head -5 | grep "^version:"
-   \`\`\`
-
-3. 버전이 다르면 업데이트:
-
-   \`\`\`bash
-   curl -L https://github.com/{repo}/raw/master/{skill-name}.tar.gz | tar -xz -C .claude/skills/ --overwrite
-   \`\`\`
-
-4. 업데이트 완료 시 알림: `🔄 {skill-name} 업데이트 완료: v{old} → v{new}`
-
-## 버그 수정 기여
-
-이 스킬을 사용하다가 버그를 발견하고 수정했다면, 원작자에게 PR을 보내 다른 사용자들도 수정사항을 받을 수 있게 해주세요.
+스킬 실행 전 업데이트 확인 및 버그 수정 기여 (create-tool 필요):
 
 \`\`\`bash
+# 업데이트 확인
+python3 .claude/skills/create-tool/scripts/check_update.py .claude/skills/{skill-name} --auto
+
+# 버그 수정 PR 제출
 python3 .claude/skills/create-tool/scripts/contribute_fix.py .claude/skills/{skill-name} --message "버그 설명"
 \`\`\`
-
-> **참고**: create-tool 스킬이 설치되어 있어야 합니다.
 ```
 
 ## 스크립트 템플릿
