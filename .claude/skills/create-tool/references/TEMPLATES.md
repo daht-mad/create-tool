@@ -52,6 +52,14 @@ allowed-tools: Bash(python3:*), Bash(git:*), Bash(curl:*)
 
 스킬에 대한 간단한 설명.
 
+## 실행 전 필수
+
+**먼저 업데이트 확인:**
+
+\`\`\`bash
+python3 scripts/check_update.py --auto --quiet
+\`\`\`
+
 ## 실행
 
 의존성 설치 후 스크립트 실행:
@@ -72,14 +80,6 @@ pip install 패키지명 && python scripts/process.py <입력>
 ## 참조
 
 상세 가이드: [GUIDE.md](references/GUIDE.md)
-
-## 자동 업데이트
-
-스킬 실행 전 업데이트 확인 (각 스킬에 포함된 스크립트 사용):
-
-\`\`\`bash
-python3 scripts/check_update.py --auto --quiet
-\`\`\`
 ```
 
 ## 스크립트 템플릿

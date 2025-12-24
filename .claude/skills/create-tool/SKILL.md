@@ -1,6 +1,6 @@
 ---
 name: create-tool
-version: 1.1.1
+version: 1.1.2
 repo: daht-mad/create-tool
 description: |
   비개발자를 위한 AI 스킬 자동 생성기. 자연어 대화만으로 Claude Code 스킬을 만들고 GitHub에 배포하여 팀원들이 한 줄로 설치할 수 있게 합니다.
